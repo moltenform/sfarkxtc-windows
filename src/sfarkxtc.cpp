@@ -2,6 +2,9 @@
 // Copyright 2002 Andy Inman
 // Contact via: http://netgenius.co.uk or http://melodymachine.com
 
+// Forked for win32 by Ben Fisher (moltenform) in 2019,
+// https://github.com/moltenform/sfarkxtc-windows
+
 // This file is part of sfArkLib.
 //
 // sfArkLib is free software: you can redistribute it and/or modify
@@ -34,7 +37,7 @@ const char	*ThisVersion = "3.0-SNAPSHOT";	// Version of program
 #include <time.h>
 //#include <iostream>
 
-#include <sfArkLib.h>
+#include "sfArkLib.h"
 
 // Application-supplied functions...
 void sfkl_msg(const char *MessageText, int Flags);				// Message display function
@@ -170,7 +173,8 @@ void sfkl_UpdateProgress(int ProgressPercent)
 
 // ==========================================================================================
 // Display/confirm license
-bool sfkl_GetLicenseAgreement(const char *LicenseText, const char *OutFileName)
+
+bool sfkl_GetLicenseAgreement(const char *LicenseText, const char * /* OutFileName */)
 {
 	char c;
 
@@ -189,7 +193,7 @@ bool sfkl_GetLicenseAgreement(const char *LicenseText, const char *OutFileName)
 }
 
 // ============================================================================================
-void sfkl_DisplayNotes(const char *NotesFilePath, const char* OutFileName)				// Display notes text file
+void sfkl_DisplayNotes(const char *NotesFilePath, const char* /* OutFileName */)				// Display notes text file
 {
 	printf("Notes text file extracted to: %s\n ", NotesFilePath);
 }

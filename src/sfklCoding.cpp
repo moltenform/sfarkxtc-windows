@@ -841,6 +841,9 @@ int Decode(const char *InFileName, const char *ReqOutFileName)
 
 // ==============================================================
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+
 // Adjust integer held at *num for this machine's endian system
 void FixEndian(void *num, int nsize)
 {
@@ -855,5 +858,7 @@ void FixEndian(void *num, int nsize)
   #endif
 #endif
 }
+
+#pragma GCC diagnostic pop
 
 // ==============================================================
