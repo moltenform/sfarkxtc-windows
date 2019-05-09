@@ -101,6 +101,13 @@ int ReportError(long error)
 	}
 }
 
+static_assert(sizeof(unsigned long) == 4, 
+	"\nThis type of x64 build is untested!\n"
+	"We might fail to correctly extract from sfark files\n"
+	"See https://github.com/raboof/sfArkLib/issues/12\n"
+	"or\n"
+	"http://linux-audio.4202.n7.nabble.com/sfArk-for-Linux-git-repo-access-tp93130p93161.html\n"
+	"for a potential patch+fix");
 
 // ============================ m a i n ==============================================
 
