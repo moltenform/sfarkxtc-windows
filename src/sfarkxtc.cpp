@@ -35,7 +35,6 @@ const char	*ThisVersion = "3.0-snapshot";	// Version of program
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <string>
 
 #include "sfArkLib.h"
 
@@ -171,26 +170,11 @@ void sfkl_UpdateProgress(int ProgressPercent)
 
 // ==========================================================================================
 // Display/confirm license
-bool sfkl_GetLicenseAgreement(const char *LicenseText, const char * OutFileName)
+bool sfkl_GetLicenseAgreement(const char *LicenseText, const char *OutFileName)
 {
 	if (quiet)
 	{
-		if (LicenseText && strlen(LicenseText) > 1) {
-			std::string licensePath;
-			licensePath = OutFileName;
-			licensePath += ".licenses.txt";
-			FILE *f = fopen(licensePath.c_str(), "w");
-			if (f)
-			{
-				fputs(LicenseText, f);
-				fclose(f);
-			}
-			else
-			{
-				printf("\nCould not write a file at %s", licensePath.c_str());
-			}
-		}
-		
+		printf("\nLicense written to %s\n", OutFileName ? OutFileName : "");
 		return true;
 	}
 	else
