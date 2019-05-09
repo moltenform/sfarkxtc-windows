@@ -29,13 +29,13 @@
 //	Initial version,	andyi, 14-Sep-2002
 
 const char	*ThisProg = "sfarkxtc";
-const char	*ThisVersion = "3.0-SNAPSHOT";	// Version of program
+const char	*ThisVersion = "3.0-snapshot";	// Version of program
 
 // Standard includes...
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-//#include <iostream>
+#include <string>
 
 #include "sfArkLib.h"
 
@@ -44,6 +44,7 @@ void sfkl_msg(const char *MessageText, int Flags);				// Message display functio
 void sfkl_UpdateProgress(int ProgressPercent);						// Progress indication
 bool sfkl_GetLicenseAgreement(const char *LicenseText);	// Display/confirm license
 void sfkl_DisplayNotes(const char *NotesFileName, const char *OutFileName);				// Display notes text file
+bool quiet = false;
 
 int ReportError(long error)
 {
@@ -122,7 +123,7 @@ int main(int argc, char** argv)
 	if (argc < 2)
 	{
 		printf("Specify input and output files on the command line, i.e:\n");
-		printf("%s <InputFilename> [OutputFilename]\n", ThisProg);
+		printf("%s <InputFilename> [OutputFilename] [--quiet]\n", ThisProg);
 		return 1;
 	}
 
@@ -131,13 +132,20 @@ int main(int argc, char** argv)
 		OutFileName = argv[2];
 		printf("Uncompressing %s to %s...\n", InFileName, OutFileName);
 	}
+	
+	if (argc == 4 && strcmp("--quiet", argv[3]) == 0)
+	{
+		quiet = true;
+	}
 
 	// Uncompress the file...
 	long StartTime = clock();
 	int err = sfkl_Decode(InFileName, OutFileName);	//call decompression, report & return
-
 	long TimeTaken = 1000 * (clock() - StartTime) / CLOCKS_PER_SEC;
-	printf("cpu time taken %ld ms\n", TimeTaken);
+	
+	if (!quiet) {
+		printf("cpu time taken %ld ms\n", TimeTaken);
+	}
 
 	return ReportError(err);
 }
@@ -152,44 +160,54 @@ void sfkl_msg(const char *MessageText, int Flags)
 // ============================================================================================
 void sfkl_UpdateProgress(int ProgressPercent)
 {
-    //char ProgressBar[101];
-    //int i;
-
-    //for (i = 0; i < ProgressPercent; i++)
-    //	  ProgressBar[i] = '*';
-    //for ( ; i < 100; i++)
-    //	  ProgressBar[i] = '-';
-    //ProgressBar[100] = '\0';
-
-    //printf(ProgressBar);
-    printf("\r");
-
-    //printf("*");
-    printf("Progress: %d%%", ProgressPercent);
-    fflush(stdout);
-    if (ProgressPercent == 100)  printf("\n");
-	return;
+	if (!quiet)
+	{
+		printf("\r");
+		printf("Progress: %d%%", ProgressPercent);
+		fflush(stdout);
+		if (ProgressPercent == 100)  printf("\n");
+	}
 }
 
 // ==========================================================================================
 // Display/confirm license
-
-bool sfkl_GetLicenseAgreement(const char *LicenseText, const char * /* OutFileName */)
+bool sfkl_GetLicenseAgreement(const char *LicenseText, const char * OutFileName)
 {
-	char c;
-
-	printf("%s\n\nDo you agree to the above terms? (Y/N) ", LicenseText);
-	//c = getc(stdin);
-	c = 'y';
-	while (c != 'y' && c != 'Y' && c != 'n' &&  c != 'N')
+	if (quiet)
 	{
-	    printf("\nPlease answer Y or N and press return: ");
-	    c = getc(stdin);
-	}
-	if (c == 'y' || c == 'Y')
+		if (LicenseText && strlen(LicenseText) > 1) {
+			std::string licensePath;
+			licensePath = OutFileName;
+			licensePath += ".licenses.txt";
+			FILE *f = fopen(licensePath.c_str(), "w");
+			if (f)
+			{
+				fputs(LicenseText, f);
+				fclose(f);
+			}
+			else
+			{
+				printf("\nCould not write a file at %s", licensePath.c_str());
+			}
+		}
+		
 		return true;
+	}
 	else
-		return false;
+	{
+		char c;
+		printf("%s\n\nDo you agree to the above terms? (Y/N) ", LicenseText);
+		c = getc(stdin);
+		while (c != 'y' && c != 'Y' && c != 'n' &&  c != 'N')
+		{
+			printf("\nPlease answer Y or N and press return: ");
+			c = getc(stdin);
+		}
+		if (c == 'y' || c == 'Y')
+			return true;
+		else
+			return false;
+	}
 }
 
 // ============================================================================================
