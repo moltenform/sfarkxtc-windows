@@ -15,31 +15,29 @@ and it will extract the .sf2!
 
 ## Why sfarkxtc-windows?
 
-Interestingly, sfark still compresses .sf2 files significantly better than even modern .7z and .rar compression. However, I want to store my files in a format that will still be readable, even 20-30 years in the future, so any type of unique or proprietary format is dangerous. Moltenform's thoughts on storing soundfonts:
+Interestingly, sfark still compresses .sf2 files significantly better than even modern .7z and .rar compression. However, I want to store my files in a format that will still be readable, even 20 years in the future, so any type of unique or proprietary format is dangerous. Moltenform's thoughts on storing soundfonts:
 
 - Store the full .sf2 files
     - Pros: no need to decompress
     - Cons: takes a lot of disk space
-- Store in .7z format
-    - Pros: software to decompress is open-source and widely available
+- Store in .tar.gz, or .7z format
+    - Pros: software to decompress is open-source and available
     - Cons: does not compress .sf2 files very well, even with a large buffer size
 - Store in .sfpack format
     - Pros: good compression ratio
-    - Cons: difficult to automate decompression in the official tool
-        - the documentation mentions a COM object, but
-        - SFPSHLEX.DLL only contains IShellExt with no useful methods
     - Cons: no open source decompression = unsafe for long term storage!
+    - [More notes](./src/sfpack_notes.md)
 - Store in .sfark format
     - Pros: good compression ratio
     - Pros: some tools like SynthFont can read .sfark directly
     - Pros: easily automate decompression via cmd line tool
     - Pros: open source decompression available
     - Cons: compression still relies on closed-source win32 binary
-    - Cons: sfarkxtc might not support 100% of sfark files (e.g. "v1" files)
+    - Cons: sfarkxtc doesn't support 100% of sfark files
 
-(Note that in 2012, j\_e\_f\_f\_g, who wrote "unsfark", [claimed](https://www.linuxmusicians.com/viewtopic.php?t=9854) that sfark is an extremely fragile format relying on intel rounding errors, but this has been disputed by further research).
+(Note that in 2012, j\_e\_f\_f\_g, who wrote "unsfark", [claimed](https://www.linuxmusicians.com/viewtopic.php?t=9854) that sfark is an extremely fragile format relying on intel rounding errors, but this has been disputed by further research... in any case, we'll probably have x86 emulators for a long time. The fact that sfarkxtc can build and work targeting both x86 and x86-64 is a good sign.)
 
-Conclusion: I'll use sfark to store my soundfonts. For long term storage, I'll run a script to run everything through `sfarkxtc.exe` and ensure that `sfarkxtc` can succesfully extract a bitwise-identical .sf2 file compared with the input.
+Conclusion: I'll use sfark to store my soundfonts. For long term storage, I'll run a script to run everything through `sfarkxtc.exe` and ensure that `sfarkxtc` can extract a bitwise-identical .sf2 file compared with the input.
 
 ### Building from source
 
