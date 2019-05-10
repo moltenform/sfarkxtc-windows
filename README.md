@@ -56,6 +56,11 @@ There are many ways to accomplish this, here's a pretty straightforward route:
     - if you get the error `make: g++: Command not found`
     - add g++ to the PATH by running
     - `export PATH=$PATH:/c/ruby/Ruby25-x64/msys64/mingw64/bin`
+- For additional security, you can build with Duma enabled.
+    - adds protection against potential memory bugs triggered by malformed sfark files
+    - build Duma to get libduma.a
+    - copy libduma.a to sfarkxtc-windows/src/duma
+    - run `make USE_DUMA=1`
 - There should now be a file `sfarkxtc_out.exe`
 - Copy `C:\ruby\Ruby25-x64\msys64\mingw64\bin\zlib1.dll` into the same directory as `sfarkxtc_out.exe`
 - Done!

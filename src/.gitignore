@@ -32,6 +32,7 @@
 *.out
 *.app
 bin
+duma
 
 # Personal Notes 
 nocpy_*

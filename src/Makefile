@@ -1,4 +1,9 @@
 
+# to build,
+# run "make"
+# to build with duma,
+# run "make USE_DUMA=1"
+
 CC=gcc
 CXX=g++
 RM=rm -f
@@ -8,8 +13,12 @@ CXXFLAGS+=-fPIC -D__$(ENDIANNESS)__ -Wall -Wextra
 SRCS=sfklCoding.cpp sfklCrunch.cpp sfklDiff.cpp sfklFile.cpp sfklLPC.cpp sfklString.cpp sfklZip.cpp sfarkxtc.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
-# add a reference to zlib
-LDLIBS=-lz
+# add a reference to zlib, and optionally duma
+ifeq ($(USE_DUMA),1)
+        LDLIBS=-lz ./duma/libduma.a
+else
+        LDLIBS=-lz
+endif
 
 all: sfarkxtc_out
 
