@@ -51,7 +51,7 @@
     const char ProgVersion[]		= " 3.00";	// 5 characters xx.xx
     const unsigned char ProgVersionMaj 	= 30;		// 0-255 = V0 to V25.5xx, etc.
     const unsigned char ProgVersionMin 	= 00;		// 0-99  = Vx.x99, etc.
-    char	MsgTxt[MAX_MSGTEXT];				// Used with snprintf to build message									// Text buffer for msg()
+    char	*MsgTxt = 0;				// Size is MAX_MSGTEXT. Used with snprintf to build message
     unsigned SourceFileOffset = 0;			// Set non-zero by app for self-extraction
 #else	
     //extern	bool	Aborted;

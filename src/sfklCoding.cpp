@@ -168,10 +168,9 @@ char *ChangeFileExt(char *OutFileName, const char *NewExt, int OutFileNameSize)
 // ==============================================================
 
 // Read the File Header....
-int ReadHeader(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize)
+int ReadHeaderImpl(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize, char *CreatedByProg, char *CreatedByVersion)
 {
   int HeaderLen = 0, HdrOffset;
-  char	CreatedByProg[HDR_NAME_LEN +1],  CreatedByVersion[HDR_VERS_LEN +1];
   ULONG	CalcHdrCheck = 0;
   BYTE *HdrBuf, *bpFileHeader = (BYTE *) FileHeader;
 
@@ -303,6 +302,16 @@ int ReadHeader(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize)
   SetInputFilePosition(HdrOffset + HeaderLen);	// re-wind file to start of post-header data
   RETURN_ON_ERROR();
   return SFARKLIB_SUCCESS;
+}
+
+int ReadHeader(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize)
+{
+	char *CreatedByProg = (char *)malloc(HDR_NAME_LEN +1);
+	char *CreatedByVersion = (char *)malloc(HDR_VERS_LEN +1);
+	int ret = ReadHeaderImpl(FileHeader, fbuf, bufsize, CreatedByProg, CreatedByVersion);
+	free(CreatedByProg);
+	free(CreatedByVersion);
+	return ret;
 }
 
 // ==============================================================
@@ -675,13 +684,11 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 
 // ==============================================================
 
-int Decode(const char *InFileName, const char *ReqOutFileName)
+int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&Blk)
 {
 	char	OutFileName[MAX_FILEPATH];	// File name for current output file
 	int	NumLoops;			// Number of loops before screen update etc.
 
-	BLOCK_DATA	Blk;
-	memset(&Blk, 0, sizeof(Blk));
 	V2_FILEHEADER	*FileHeader = &Blk.FileHeader;
 
 	// NB: We keep 2 buffers with pointers in Blk->SrcBuf and Blk->DstBuf
@@ -692,18 +699,12 @@ int Decode(const char *InFileName, const char *ReqOutFileName)
 	// BYTE	Zbuf1[ZBUF_SIZE];					// Buffer1
 	// BYTE	Zbuf2[ZBUF_SIZE];					// Buffer2
         // so instead...
-        
-        #if 0
-	static BYTE	Zbuf1[ZBUF_SIZE];				// Buffer1
-	static BYTE	Zbuf2[ZBUF_SIZE];				// Buffer2
-        
-        #else
-        if (Zbuf1 == NULL) Zbuf1 = (BYTE *) calloc(ZBUF_SIZE, sizeof(BYTE));
-        if (Zbuf2 == NULL) Zbuf2 = (BYTE *) calloc(ZBUF_SIZE, sizeof(BYTE));
-        
-        if (Zbuf1 == NULL  ||  Zbuf2 == NULL)
-            return EndProcess(SFARKLIB_ERR_MALLOC);
-        #endif
+
+	if (Zbuf1 == NULL) Zbuf1 = (BYTE *) calloc(ZBUF_SIZE, sizeof(BYTE));
+	if (Zbuf2 == NULL) Zbuf2 = (BYTE *) calloc(ZBUF_SIZE, sizeof(BYTE));
+	
+	if (Zbuf1 == NULL  ||  Zbuf2 == NULL)
+		return EndProcess(SFARKLIB_ERR_MALLOC);
         
 	Blk.SrcBuf = (AWORD *) Zbuf1;					// Point to Zbuf1
 	Blk.DstBuf = (AWORD *) Zbuf2;					// Point to Zbuf2
@@ -837,6 +838,19 @@ int Decode(const char *InFileName, const char *ReqOutFileName)
     msg(MsgTxt, 0);
     
     return EndProcess(GlobalErrorFlag);
+}
+
+int Decode(const char *InFileName, const char *ReqOutFileName)
+{
+	// use the heap instead of the stack, in order to better detect overflow
+	MsgTxt = (char *)malloc(MAX_MSGTEXT);
+	BLOCK_DATA	*Blk = (BLOCK_DATA *)malloc(sizeof(BLOCK_DATA));
+	memset(Blk, 0, sizeof(*Blk));
+	
+	int ret = DecodeImpl(InFileName, ReqOutFileName, *Blk);
+	free(Blk);
+	free(MsgTxt);
+	return ret;
 }
 
 // ==============================================================

@@ -31,13 +31,13 @@ const char *GetFileExt(const char *FileName)
 
 char *StrncpyEnsureNul(char *destination, const char *source, size_t num)
 {
-  // same behavior as strncpy, except that it ensures the result is nul-terminated.
-  if (num == 0)
+  if (num == 0 || !destination || !source)
   {
     return destination;
   }
   else
   {
+    // same behavior as strncpy, except that it ensures the result is nul-terminated.
     char *ret = strncpy(destination, source, num - 1);
     destination[num - 1] = 0;
     return ret;
