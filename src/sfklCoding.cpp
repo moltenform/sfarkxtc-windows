@@ -162,7 +162,7 @@ char *ChangeFileExt(char *OutFileName, const char *NewExt, int OutFileNameSize)
 	}
 
 	n = p - OutFileName;	// Length of filename without extension
-	strncpy(p, NewExt, OutFileNameSize-1 - n);
+	StrncpyEnsureNul(p, NewExt, OutFileNameSize-1 - n);
 	return OutFileName;
 }
 // ==============================================================
@@ -257,33 +257,33 @@ int ReadHeader(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize)
     ; 							// Fall through to below (everything else is an error)
   else if (SeemsV1)					// Seems to be a sfArkV1 file
   {
-    sprintf(MsgTxt, "This file was created with sfArk V1, and this program only handles sfArk V2+ files.  Unfortunately sfArk V1 uses a proprietary compression algorithm for the non-audio metadata, so we cannot really support that. You might try running the Windows sfArk program from http://melodymachine.com/sfark.htm under Wine."); 
+    snprintf(MsgTxt, MAX_MSGTEXT, "This file was created with sfArk V1, and this program only handles sfArk V2+ files.  Unfortunately sfArk V1 uses a proprietary compression algorithm for the non-audio metadata, so we cannot really support that. You might try running the Windows sfArk program from http://melodymachine.com/sfark.htm under Wine."); 
     msg(MsgTxt, MSG_PopUp);
     return (GlobalErrorFlag = SFARKLIB_ERR_INCOMPATIBLE);
   }
   else if (SigFound)					// Apparently a corrupt sfArk file (well, it had "sfArk" in it!)
   {
-    sprintf(MsgTxt, "File Header fails checksum!%s", CorruptedMsg);
+    snprintf(MsgTxt, MAX_MSGTEXT, "File Header fails checksum!%s", CorruptedMsg);
     msg(MsgTxt, MSG_PopUp);
     return (GlobalErrorFlag = SFARKLIB_ERR_HEADERCHECK);
   }
   else							// Either very corrupted, or not a sfArk file
   {
-    sprintf(MsgTxt, "This does not appear to be a sfArk file!");
+    snprintf(MsgTxt, MAX_MSGTEXT, "This does not appear to be a sfArk file!");
     msg(MsgTxt, MSG_PopUp);
     return (GlobalErrorFlag = SFARKLIB_ERR_SIGNATURE);
   }
 
   // Get CreatedBy program name and version number (need null-terminated strings)...
-  strncpy(CreatedByProg, FileHeader->ProgName, HDR_NAME_LEN);			// Copy program name
+  StrncpyEnsureNul(CreatedByProg, FileHeader->ProgName, HDR_NAME_LEN);			// Copy program name
   CreatedByProg[HDR_NAME_LEN] = 0;																		// Terminate string
-  strncpy(CreatedByVersion, FileHeader->ProgVersion, HDR_VERS_LEN);		// Copy version string
+  StrncpyEnsureNul(CreatedByVersion, FileHeader->ProgVersion, HDR_VERS_LEN);		// Copy version string
   CreatedByVersion[HDR_VERS_LEN] = 0;																	// Terminate string
 
   // Check for compatible version...
   if (FileHeader->ProgVersionNeeded > ProgVersionMaj)
   {
-    sprintf(MsgTxt, "You need %s version %2.1f (or higher) to decompress this file (your version is %s) %s", 
+    snprintf(MsgTxt, MAX_MSGTEXT, "You need %s version %2.1f (or higher) to decompress this file (your version is %s) %s", 
 		ProgName, (float)FileHeader->ProgVersionNeeded/10, ProgVersion, UpgradeMsg);
     msg(MsgTxt, MSG_PopUp);
     return (GlobalErrorFlag = SFARKLIB_ERR_INCOMPATIBLE);
@@ -294,7 +294,7 @@ int ReadHeader(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize)
   float fCreatedByVersion = (float) atof(CreatedByVersion);
   if (fCreatedByVersion > fProgVersion)
   {
-    sprintf(MsgTxt, "This file was created with %s %s.  Your version of %s (%s) can uncompress this file, "
+    snprintf(MsgTxt, MAX_MSGTEXT, "This file was created with %s %s.  Your version of %s (%s) can uncompress this file, "
 			"but you might like to obtain the latest version.  %s",
 			CreatedByProg, CreatedByVersion, ProgName, ProgVersion, UpgradeMsg);
     msg(MsgTxt, MSG_PopUp);
@@ -310,7 +310,7 @@ bool InvalidEncodeCount(int EncodeCount, int MaxLoops)
 {
 	if (EncodeCount < 0  ||  EncodeCount > MaxLoops)	// EncodeCount out of range?
 	{
-		sprintf(MsgTxt, "ERROR - Invalid EncodeCount (apparently %d) %s", EncodeCount, CorruptedMsg);
+		snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - Invalid EncodeCount (apparently %d) %s", EncodeCount, CorruptedMsg);
 		msg(MsgTxt, MSG_PopUp);
 		return true;
 	}
@@ -328,7 +328,7 @@ int DecompressTurbo(BLOCK_DATA *Blk, USHORT NumWords)
     int UnCrunchResult = UnCrunchWin(Blk->SrcBuf, NumWords, 8*OPTWINSIZE);
     if (UnCrunchResult < 0)
     {
-        sprintf(MsgTxt, "ERROR - UnCrunchWin returned: %d %s", UnCrunchResult, CorruptedMsg);
+        snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - UnCrunchWin returned: %d %s", UnCrunchResult, CorruptedMsg);
 	msg(MsgTxt, MSG_PopUp);
         return (GlobalErrorFlag = SFARKLIB_ERR_CORRUPT);
     }
@@ -381,7 +381,7 @@ bool CheckShift(short *ShiftVal, USHORT NumWords, short *PrevShift, short *PrevU
       // Update all ShiftVal[] data prior to change...
 			if (ChangePos > MaxShifts)										// Corrupt data?
 			{
-				sprintf(MsgTxt, "ERROR - Invalid Shift ChangePos (apparently %d) %s", ChangePos, CorruptedMsg);
+				snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - Invalid Shift ChangePos (apparently %d) %s", ChangePos, CorruptedMsg);
 				msg(MsgTxt, MSG_PopUp);
 				GlobalErrorFlag = SFARKLIB_ERR_CORRUPT;
 				return false;
@@ -442,7 +442,7 @@ int DecompressFast(BLOCK_DATA *Blk, USHORT NumWords)
     // Read the file and unpack the bitstream into buffer at Buf1p...
     if (int UnCrunchResult = UnCrunchWin(Blk->SrcBuf, NumWords, OPTWINSIZE) < 0)		// failed?
     {
-        sprintf(MsgTxt, "ERROR - UnCrunchWin returned: %d %s", UnCrunchResult, CorruptedMsg);
+        snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - UnCrunchWin returned: %d %s", UnCrunchResult, CorruptedMsg);
 	msg(MsgTxt, MSG_PopUp);
         return(GlobalErrorFlag = SFARKLIB_ERR_CORRUPT);
     }
@@ -550,7 +550,7 @@ int ProcessNextBlock(BLOCK_DATA *Blk)
 	//printf("Reading PRE/POST AUDIO block, compressed %ld bytes\n", n);
 	if (n > ZBUF_SIZE)	// Check for valid block length
 	{
-	  sprintf(MsgTxt, "ERROR - Invalid length for Non-audio Block (apparently %d bytes) %s", n, CorruptedMsg);
+	  snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - Invalid length for Non-audio Block (apparently %d bytes) %s", n, CorruptedMsg);
 	  msg(MsgTxt, MSG_PopUp);
 	  return (GlobalErrorFlag = SFARKLIB_ERR_CORRUPT);
 	}
@@ -594,7 +594,7 @@ int ProcessNextBlock(BLOCK_DATA *Blk)
       } // case
     } //switch
 
-    //sprintf(MsgTxt, "BytesWritten: %ld of %ld", Blk->TotBytesWritten, Blk->FileHeader.OriginalSize);
+    //snprintf(MsgTxt, MAX_MSGTEXT, "BytesWritten: %ld of %ld", Blk->TotBytesWritten, Blk->FileHeader.OriginalSize);
     //msg(MsgTxt, 0);
     return SFARKLIB_SUCCESS;
 }
@@ -633,7 +633,7 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 
 		if (n <= 0  ||  n > ZBUF_SIZE)								// Check for valid block length
 		{
-			sprintf(MsgTxt, "ERROR - Invalid length for %s file (apparently %ld bytes) %s", FileExt, n, CorruptedMsg);
+			snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - Invalid length for %s file (apparently %ld bytes) %s", FileExt, n, CorruptedMsg);
 			msg(MsgTxt, MSG_PopUp);
 			GlobalErrorFlag = SFARKLIB_ERR_CORRUPT;
 			return false;
@@ -648,14 +648,14 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 
 		// Write file - Use original file name plus specified extension for OutFileName...
 		char OutFileName[MAX_FILENAME];
-		strncpy(OutFileName, Blk->FileHeader.FileName, sizeof(OutFileName));	// copy output filename
+		StrncpyEnsureNul(OutFileName, Blk->FileHeader.FileName, sizeof(OutFileName));	// copy output filename
 		ChangeFileExt(OutFileName, FileExt, sizeof(OutFileName));
 		OpenOutputFile(OutFileName);	// Create notes / license file
 		WriteOutputFile(zDstBuf, m);																			// and write to output file
 		CloseOutputFile();
 		if (FileType == FLAGS_License)
 		{
-                    sprintf(MsgTxt, "Created license file: %s", OutFileName);
+                    snprintf(MsgTxt, MAX_MSGTEXT, "Created license file: %s", OutFileName);
                     msg(MsgTxt, 0);
 			if (GetLicenseAgreement((const char *)zDstBuf, OutFileName) == false)
 			{
@@ -665,7 +665,7 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 		}
 		else if (FileType == FLAGS_Notes)
                 {
-                    sprintf(MsgTxt, "Created notes file: %s", OutFileName);
+                    snprintf(MsgTxt, MAX_MSGTEXT, "Created notes file: %s", OutFileName);
                     msg(MsgTxt, 0);
                     DisplayNotes((const char *)zDstBuf, OutFileName);
                 }
@@ -734,9 +734,9 @@ int Decode(const char *InFileName, const char *ReqOutFileName)
 		if (ExtractTextFile(&Blk, FLAGS_Notes) == false)
 			return EndProcess(GlobalErrorFlag);
 	}
-
+	
         // Use original file extension for OutFileName...
-        strncpy(OutFileName, ReqOutFileName, sizeof(OutFileName));			// Copy output filename
+        StrncpyEnsureNul(OutFileName, ReqOutFileName, sizeof(OutFileName));			// Copy output filename
         OpenOutputFile(OutFileName);																		// Create the main output file...
 
 	// Set the decompression parameters...
@@ -786,7 +786,7 @@ int Decode(const char *InFileName, const char *ReqOutFileName)
 		}
 		default:
 		{
-			sprintf(MsgTxt, "Unknown Compression Method: %d%s", FileHeader->CompMethod, CorruptedMsg);
+			snprintf(MsgTxt, MAX_MSGTEXT, "Unknown Compression Method: %d%s", FileHeader->CompMethod, CorruptedMsg);
                         GlobalErrorFlag = SFARKLIB_ERR_INCOMPATIBLE;
 			msg(MsgTxt, MSG_PopUp);
 			return EndProcess(GlobalErrorFlag);
@@ -825,15 +825,15 @@ int Decode(const char *InFileName, const char *ReqOutFileName)
     // Check the CheckSum...
     if (Blk.FileCheck != FileHeader->FileCheck)
     {
-        sprintf(MsgTxt, "CheckSum Fail!%s",CorruptedMsg);
+        snprintf(MsgTxt, MAX_MSGTEXT, "CheckSum Fail!%s",CorruptedMsg);
 	msg(MsgTxt, MSG_PopUp);
-        //sprintf(MsgTxt, "Calc check %lx", Blk.FileCheck);
+        //snprintf(MsgTxt, MAX_MSGTEXT, "Calc check %lx", Blk.FileCheck);
 	//msg(MsgTxt, MSG_PopUp);
 	GlobalErrorFlag = SFARKLIB_ERR_FILECHECK;
 	return EndProcess(GlobalErrorFlag);
     }
 
-    sprintf(MsgTxt, "Created %s (%ld kb) successfully.", ReqOutFileName, Blk.TotBytesWritten/1024);
+    snprintf(MsgTxt, MAX_MSGTEXT, "Created %s (%ld kb) successfully.", ReqOutFileName, Blk.TotBytesWritten/1024);
     msg(MsgTxt, 0);
     
     return EndProcess(GlobalErrorFlag);

@@ -86,14 +86,14 @@ void OpenOutputFile(const char *FileName)
   }
   
   if (i < 0)
-    strncpy(OutFileName, FileName, sizeof(OutFileName));
+    StrncpyEnsureNul(OutFileName, FileName, sizeof(OutFileName));
   else
   {
-      strncpy(OutFileName, InFileName, i+1);
-      strncpy(OutFileName+i+1, FileName, sizeof(OutFileName) - (i+1));
+      StrncpyEnsureNul(OutFileName, InFileName, i+1);
+      StrncpyEnsureNul(OutFileName+i+1, FileName, sizeof(OutFileName) - (i+1));
   }
   #else
-  strncpy(OutFileName, FileName, sizeof(OutFileName));
+  StrncpyEnsureNul(OutFileName, FileName, sizeof(OutFileName));
   #endif
   
   //strcat(OutFileName, TempFileExt);	// Add temporary extension
@@ -107,7 +107,7 @@ void OpenOutputFile(const char *FileName)
 void OpenInputFile(const char *FileName)
 {
   //printf("OpenInputFile: %s\n", FileName);
-  strncpy(InFileName, FileName, sizeof(InFileName));
+  StrncpyEnsureNul(InFileName, FileName, sizeof(InFileName));
   InputFileHandle = OPENFILE(FileName);
   if (InputFileHandle == INVALID_HANDLE_VALUE)  ChkErr("open", InFileName);
   //else printf("OpenInputFile successful\n");
@@ -199,7 +199,7 @@ int ChkErr(const char *ErrorMsg, const char *FileName)
   if (~GlobalErrorFlag)		// Prevent multiple error messages
   {
     ErrCode = GETLASTERROR();
-    sprintf(ErrDesc, "OS ERROR %d - Failed to %s: %s", ErrCode, ErrorMsg, FileName);
+    snprintf(ErrDesc, MAX_MSGTEXT, "OS ERROR %d - Failed to %s: %s", ErrCode, ErrorMsg, FileName);
 	msg(ErrDesc, MSG_PopUp);
     GlobalErrorFlag = SFARKLIB_ERR_FILEIO;
   }

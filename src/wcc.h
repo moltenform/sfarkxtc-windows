@@ -23,6 +23,7 @@
 #endif
 #endif
 
+#include	<stddef.h>
 #include	"sfArkLib.h"
 
 // ------------------------------------------------------------------------------------
@@ -50,7 +51,7 @@
     const char ProgVersion[]		= " 3.00";	// 5 characters xx.xx
     const unsigned char ProgVersionMaj 	= 30;		// 0-255 = V0 to V25.5xx, etc.
     const unsigned char ProgVersionMin 	= 00;		// 0-99  = Vx.x99, etc.
-    char	MsgTxt[MAX_MSGTEXT];				// Used with sprintf to build message									// Text buffer for msg()
+    char	MsgTxt[MAX_MSGTEXT];				// Used with snprintf to build message									// Text buffer for msg()
     unsigned SourceFileOffset = 0;			// Set non-zero by app for self-extraction
 #else	
     //extern	bool	Aborted;
@@ -205,3 +206,6 @@ extern long	UnLPC(AWORD *OutBuf, AWORD *InBuf, short bufsize, short nc, ULONG *F
 
 // sfArkLib_Zip...
 extern ULONG	UnMemcomp(const BYTE *InBuf, int InBytes, BYTE *OutBuf, int OutBufLen);
+
+// sfArkLib_String...
+extern char *StrncpyEnsureNul(char *destination, const char *source, size_t num);
