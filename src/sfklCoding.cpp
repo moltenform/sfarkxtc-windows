@@ -735,7 +735,10 @@ int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&B
 		if (ExtractTextFile(&Blk, FLAGS_Notes) == false)
 			return EndProcess(GlobalErrorFlag);
 	}
-	
+
+	snprintf(MsgTxt, MAX_MSGTEXT, "Original filename: %s", FileHeader->FileName);
+	msg(MsgTxt, 0);
+
         // Use original file extension for OutFileName...
         StrncpyEnsureNul(OutFileName, ReqOutFileName, sizeof(OutFileName));			// Copy output filename
         OpenOutputFile(OutFileName);																		// Create the main output file...
