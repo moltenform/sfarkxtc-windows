@@ -27,4 +27,5 @@
 - at this point the best bet is to extract sfpack files manually, in Wine if necessary
 - if I really need automation, use Launchorz or equivalently pywinauto
 
+[Back](../README.md)
 

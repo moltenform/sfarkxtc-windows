@@ -4,7 +4,7 @@
 # to build with duma,
 # run "make USE_DUMA=1"
 
-# to build with stack protection,
+# to build with duma and stack protection,
 # run "make USE_DUMA=1 STACK_PROTECT=1"
 
 CC=gcc
@@ -19,9 +19,9 @@ CXXFLAGS+= -Wformat-security -mmitigate-rop
 # add more security flags, at the cost of some performance (only 7.1% slower in my tests)
 CXXFLAGS+= -pie -fPIE -D_FORTIFY_SOURCE=2
 CXXFLAGS+= -Wl,-z,relro,-z,now -Wl,-z,noexecstack
-CXXFLAGS+= -Wl,dynamicbase -Wl,nxcompat 
+CXXFLAGS+= -Wl,dynamicbase -Wl,nxcompat
 ifeq ($(PROTECT_STACK),1)
-        CXXFLAGS+= -fstack-clash-protection  -fstack-protector-strong
+        CXXFLAGS+= -fstack-clash-protection -fstack-protector-strong
 endif
 
 SRCS=sfklCoding.cpp sfklCrunch.cpp sfklDiff.cpp sfklFile.cpp sfklLPC.cpp sfklString.cpp sfklZip.cpp sfarkxtc.cpp
@@ -29,15 +29,19 @@ OBJS=$(subst .cpp,.o,$(SRCS))
 
 # add a reference to zlib, and optionally duma
 ifeq ($(USE_DUMA),1)
-        LDLIBS=-lz -lssp ./duma/libduma.a
+        LDLIBS=-lz ./duma/libduma.a
 else
-        LDLIBS=-lz -lssp
+        LDLIBS=-lz
+endif
+
+ifeq ($(PROTECT_STACK),1)
+        LDLIBS+= -lssp
 endif
 
 all: sfarkxtc_out
 
 sfarkxtc_out: $(OBJS)
-	$(CXX) $(LDFLAGS) -o sfarkxtc_out $(OBJS) $(LDLIBS) 
+	$(CXX) $(LDFLAGS) -o sfarkxtc_out $(OBJS) $(LDLIBS)
 
 depend: .depend
 

@@ -15,12 +15,12 @@ and it will extract the .sf2!
 
 ## Why sfarkxtc-windows?
 
-Interestingly, sfark still compresses .sf2 files significantly better than even modern .7z and .rar compression. However, I want to store my files in a format that will still be readable, even 20 years in the future, so any type of unique or proprietary format is dangerous. Moltenform's thoughts on storing soundfonts:
+sfArk still compresses .sf2 files significantly better than even modern .7z and .rar compression. I want to store my files in a format that will still be readable, even 20 years in the future, though, so any type of unique or proprietary format is dangerous. My thoughts on storing soundfonts:
 
 - Store the full .sf2 files
     - Pros: no need to decompress
-    - Cons: takes a lot of disk space
-- Store in .tar.gz, or .7z format
+    - Cons: heavy disk space use
+- Store in .tar.gz, .xz, or .7z format
     - Pros: software to decompress is open-source and available
     - Cons: does not compress .sf2 files very well, even with a large buffer size
 - Store in .sfpack format
@@ -58,7 +58,7 @@ There are many ways to accomplish this, here's a pretty straightforward route:
     - `export PATH=$PATH:/c/ruby/Ruby25-x64/msys64/mingw64/bin`
 - Optional: for additional security, you can build with Duma enabled.
     - adds protection against potential memory bugs triggered by malformed sfark files
-    - build Duma to get libduma.a
+    - build Duma to get libduma.a (my notes on [building Duma](./src/build_duma.md))
     - copy libduma.a to sfarkxtc-windows/src/duma
     - run `make USE_DUMA=1`
 - Optional: for additional security, you can build with stack protection.
@@ -68,6 +68,7 @@ There are many ways to accomplish this, here's a pretty straightforward route:
     - run `make USE_DUMA=1 PROTECT_STACK=1`
 - There should now be a file `sfarkxtc_out.exe`
 - Copy `C:\ruby\Ruby25-x64\msys64\mingw64\bin\zlib1.dll` into the same directory as `sfarkxtc_out.exe`
+- Copy `C:\ruby\Ruby25-x64\msys64\mingw64\bin\libssp-0.dll` into the same directory as `sfarkxtc_out.exe`
 - Done!
 
 ### Zlib
