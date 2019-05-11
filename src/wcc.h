@@ -189,6 +189,8 @@ extern bool	BioReadFlag(void);
 extern long	BioReadBuf(BYTE *Buf, long BufSize);
 extern AWORD	InputDiff(AWORD PrevValue);
 extern short	GetNBits(short w);
+extern void	sfklCrunch_BuffersInit();
+extern void	sfklCrunch_BuffersFree();
 
 // sfArkLib_File (or supplied by SDL.cpp)...
 extern void	OpenOutputFile(const char *FileName);
@@ -203,6 +205,8 @@ extern void	CloseOutputFile(void);
 // sfArkLib_LPC...
 extern void	LPCinit(void);
 extern long	UnLPC(AWORD *OutBuf, AWORD *InBuf, short bufsize, short nc, ULONG *Flags);
+extern void	sfklLPC_BuffersInit();
+extern void	sfklLPC_BuffersFree();
 
 // sfArkLib_Zip...
 extern ULONG	UnMemcomp(const BYTE *InBuf, int InBytes, BYTE *OutBuf, int OutBufLen);

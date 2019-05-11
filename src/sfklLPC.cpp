@@ -70,6 +70,58 @@ typedef float	LPN;			// Lower PrecisioN to store results of calculations
 typedef LPC_FLOAT  LPC_CORR;
 typedef LPC_FLOAT  LPC_CORR2;    // Holds LPC_CORR*LPC_CORR
 
+LPC_CORR2 *gSchurGen0 = 0; // will contain PMAX elements
+LPC_CORR2 *gSchurGen1 = 0; // will contain PMAX elements
+LPC_WORD *gUnLpclInBuf = 0; // will contain MAX_BUFSIZE elements
+LPC_WORD *gUnLpclOutBuf = 0; // will contain MAX_BUFSIZE elements
+LPC_PRAM *gUnLPC2ref = 0; // will contain PMAX elements
+LPC_CORR *gUnLPC2ac = 0; // will contain PMAX+1 elements
+LPC_FLOAT *gAddACbuf = 0; // will contain PMAX*2 elements
+LPC_FLOAT *gAutocorrelationbuf= 0; // will contain ZWINMAX elements
+
+void sfklLPC_BuffersInit()
+{
+  gSchurGen0 = (LPC_CORR2*)malloc(sizeof(LPC_CORR2) * PMAX);
+  memset(gSchurGen0, 0, sizeof(LPC_CORR2) * PMAX);
+  gSchurGen1 = (LPC_CORR2*)malloc(sizeof(LPC_CORR2) * PMAX);
+  memset(gSchurGen1, 0, sizeof(LPC_CORR2) * PMAX);
+  
+  gUnLpclInBuf = (LPC_WORD*)malloc(sizeof(LPC_WORD) * MAX_BUFSIZE);
+  memset(gUnLpclInBuf, 0, sizeof(LPC_WORD) * MAX_BUFSIZE);
+  gUnLpclOutBuf = (LPC_WORD*)malloc(sizeof(LPC_WORD) * MAX_BUFSIZE);
+  memset(gUnLpclOutBuf, 0, sizeof(LPC_WORD) * MAX_BUFSIZE);
+  
+  gUnLPC2ref = (LPC_PRAM*)malloc(sizeof(LPC_PRAM) * PMAX);
+  memset(gUnLPC2ref, 0, sizeof(LPC_PRAM) * PMAX);
+  gUnLPC2ac = (LPC_CORR*)malloc(sizeof(LPC_CORR) * (PMAX+1));
+  memset(gUnLPC2ac, 0, sizeof(LPC_CORR) * (PMAX+1));
+  gAddACbuf = (LPC_FLOAT*)malloc(sizeof(LPC_FLOAT) * (PMAX*2));
+  memset(gAddACbuf, 0, sizeof(LPC_FLOAT) * (PMAX*2));
+  gAutocorrelationbuf = (LPC_FLOAT*)malloc(sizeof(LPC_FLOAT) * (ZWINMAX));
+  memset(gAutocorrelationbuf, 0, sizeof(LPC_FLOAT) * (ZWINMAX));
+}
+
+void sfklLPC_BuffersFree()
+{
+  free(gSchurGen0);
+  free(gSchurGen1);
+  free(gUnLpclInBuf);
+  free(gUnLpclOutBuf);
+  free(gUnLPC2ref);
+  free(gUnLPC2ac);
+  free(gAddACbuf);
+  free(gAutocorrelationbuf);
+  gSchurGen0 = 0;
+  gSchurGen1 = 0;
+  gUnLpclInBuf = 0;
+  gUnLpclOutBuf = 0;
+  gUnLPC2ref = 0;
+  gUnLPC2ac = 0;
+  gAddACbuf = 0;
+  gAutocorrelationbuf = 0;
+}
+
+
 // ======================================================================
 LPC_CORR schur(             // returns the minimum mean square error
     LPC_CORR const * ac,    //  in: [0...p] autocorrelation values
@@ -79,7 +131,11 @@ LPC_CORR schur(             // returns the minimum mean square error
     int i, m;
 
     LPC_CORR2 error, r;
-    LPC_CORR2 Gen0[PMAX], Gen1[PMAX];
+    
+  memset(gSchurGen0, 0, sizeof(LPC_CORR2) * PMAX);
+  memset(gSchurGen1, 0, sizeof(LPC_CORR2) * PMAX);
+  LPC_CORR2 *Gen0 = gSchurGen0;
+  LPC_CORR2 *Gen1 = gSchurGen1;
 
     if (ac[0] == 0)
     {
@@ -128,9 +184,11 @@ LPC_CORR schur(             // returns the minimum mean square error
 void autocorrelation(int n, LPC_WORD const *ibuf, int nc, LPC_CORR *ac)
 {
       int i;
+  
+      memset(gAutocorrelationbuf, 0, sizeof(LPC_FLOAT) * (ZWINMAX));
+      LPC_FLOAT *buf = gAutocorrelationbuf;
 
       // Copy integer data to float -- speeds things up slightly...
-      LPC_FLOAT buf[ZWINMAX];
       for (i = 0; i < n ; i++)  buf[i] = (LPC_FLOAT) ibuf[i];
     
       while (nc--)
@@ -161,10 +219,11 @@ void autocorrelation(int n, LPC_WORD const *ibuf, int nc, LPC_CORR *ac)
 void AddAC (LPC_WORD const *hbuf, LPC_WORD const *ibuf, int nc, LPC_CORR *ac)
 {
       int i;
+  
+      memset(gAddACbuf, 0, sizeof(LPC_FLOAT) * (PMAX*2));
+      LPC_FLOAT *buf = gAddACbuf;
 
       // Copy integer data to float -- speeds things up slightly...
-      LPC_FLOAT buf[PMAX*2];
-
       int n = nc-1;                            // Number of samples is always one less than nc value
 
       for (i = 0; i < n ; i++)
@@ -277,8 +336,10 @@ long UnLPC2(LPC_WORD *OutBuf, LPC_WORD *InBuf, short bufsize, short nc, ULONG *F
     static LPC_CORR AcHist[HISTSIZE][PMAX+1];
     static int HistNum;
 
-    LPC_PRAM ref[PMAX];
-    LPC_CORR ac[PMAX+1];
+    memset(gUnLPC2ref, 0, sizeof(LPC_PRAM) * PMAX);
+    memset(gUnLPC2ac, 0, sizeof(LPC_CORR) * (PMAX+1));
+    LPC_PRAM *ref = gUnLPC2ref;
+    LPC_CORR *ac = gUnLPC2ac;
 
     int i, k;
     ULONG FlagMask = 1;
@@ -350,7 +411,11 @@ void LPCinit()
 long UnLPC(AWORD *OutBuf, AWORD *InBuf, short bufsize, short nc, ULONG *Flags)
 {
   long      OutBits = 0;
-  LPC_WORD  lInBuf[MAX_BUFSIZE], lOutBuf[MAX_BUFSIZE];
+  
+  memset(gUnLpclInBuf, 0, sizeof(LPC_WORD) * MAX_BUFSIZE);
+  memset(gUnLpclOutBuf, 0, sizeof(LPC_WORD) * MAX_BUFSIZE);
+  LPC_WORD *lInBuf = gUnLpclInBuf;
+  LPC_WORD *lOutBuf = gUnLpclOutBuf;
   LPC_WORD  *inp = lInBuf, *bufend = inp + bufsize, *outp = lOutBuf;
 
   int i;

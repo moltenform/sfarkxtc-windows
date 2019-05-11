@@ -140,6 +140,10 @@ static	BYTE *Zbuf1 = NULL, *Zbuf2 = NULL;
 const char	CorruptedMsg[]	= "- This file appears to be corrupted.";
 const char	UpgradeMsg[]		= "Please see Help/About for information on how to obtain an update.";
 
+short	*gDecompressFastShiftVal = 0; // Will contain NSHIFTS elements
+USHORT	*gDecompressFastMethod = 0; // Will contain MAX_DIFF_LOOPS elements
+BLOCK_DATA	*gDecodeBlk = 0;  // Will contain one BLOCK_DATA element
+
 // ==============================================================
 USHORT	GetsfArkLibVersion(void)
 {
@@ -411,8 +415,11 @@ bool CheckShift(short *ShiftVal, USHORT NumWords, short *PrevShift, short *PrevU
 int DecompressFast(BLOCK_DATA *Blk, USHORT NumWords)
 {
     int	i, EncodeCount;
-    short	ShiftVal[NSHIFTS];						// Shift values (one per SHIFTWIN words)
-    USHORT	Method[MAX_DIFF_LOOPS];				// Block processing methods used per iteration
+
+	memset(gDecompressFastShiftVal, 0, sizeof(short) * NSHIFTS);
+	memset(gDecompressFastMethod, 0, sizeof(USHORT) * MAX_DIFF_LOOPS);
+	short	*ShiftVal = gDecompressFastShiftVal; // Shift values (one per SHIFTWIN words)
+	USHORT	*Method = gDecompressFastMethod; // Block processing methods used per iteration
 
     #if	DB_BLOCKCHECK											// If debug mode block check enabled
         ULONG BlockCheck = BioRead(16);				// Read block check bits
@@ -843,16 +850,43 @@ int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&B
     return EndProcess(GlobalErrorFlag);
 }
 
+void sfklCoding_BuffersInit()
+{
+	MsgTxt = (char *)malloc(sizeof(char) * MAX_MSGTEXT);
+	memset(MsgTxt, 0, sizeof(char) * MAX_MSGTEXT);
+	gDecodeBlk = (BLOCK_DATA *)malloc(sizeof(BLOCK_DATA) * 1);
+	memset(gDecodeBlk, 0, sizeof(BLOCK_DATA) * 1);
+	gDecompressFastShiftVal = (short *)malloc(sizeof(short) * NSHIFTS);
+	memset(gDecompressFastShiftVal, 0, sizeof(short) * NSHIFTS);
+	gDecompressFastMethod = (USHORT *)malloc(sizeof(USHORT) * MAX_DIFF_LOOPS);
+	memset(gDecompressFastMethod, 0, sizeof(USHORT) * MAX_DIFF_LOOPS);
+}
+
+void sfklCoding_BuffersFree()
+{
+	free(MsgTxt);
+	free(gDecodeBlk);
+	free(gDecompressFastShiftVal);
+	free(gDecompressFastMethod);
+	MsgTxt = 0;
+	gDecodeBlk = 0;
+	gDecompressFastShiftVal = 0;
+	gDecompressFastMethod = 0;
+}
+
 int Decode(const char *InFileName, const char *ReqOutFileName)
 {
-	// use the heap instead of the stack, in order to better detect overflow
-	MsgTxt = (char *)malloc(MAX_MSGTEXT);
-	BLOCK_DATA	*Blk = (BLOCK_DATA *)malloc(sizeof(BLOCK_DATA));
-	memset(Blk, 0, sizeof(*Blk));
-	
-	int ret = DecodeImpl(InFileName, ReqOutFileName, *Blk);
-	free(Blk);
-	free(MsgTxt);
+	// choose to allocate on the heap instead of the stack, in order to better detect overflow
+	sfklCoding_BuffersInit();
+	sfklLPC_BuffersInit();
+	sfklCrunch_BuffersInit();
+
+	memset(gDecodeBlk, 0, sizeof(BLOCK_DATA) * 1);
+	int ret = DecodeImpl(InFileName, ReqOutFileName, *gDecodeBlk);
+
+	sfklCoding_BuffersFree();
+	sfklLPC_BuffersFree();
+	sfklCrunch_BuffersFree();
 	return ret;
 }
 

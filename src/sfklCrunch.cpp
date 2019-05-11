@@ -20,6 +20,7 @@
 
 #include "wcc.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 // Static table to store number of bits per word...
@@ -34,12 +35,24 @@ static BYTE nb[1 << (AWORD_BITS-1)]; // Array to hold number of bits needed to r
   #define BIOBUFSIZE    (16 * 1024)	// Disk-read buffer size, bigger may increased speed
 
   BIOWORD2 bioBits;					// Bits not yet shifted from bioBuf (up to double length of BIOWORD)
-  BIOWORD bioBuf[BIOBUFSIZE];		// Buffer
+  BIOWORD *bioBuf = 0;		// Buffer (contains BIOBUFSIZE elements)
 
   int    bioP;						// Count of output (index into bioBuf)
   int    bioRemBits;				// Remaining bits left in bioBits
   int    bioWholeBlocks;			// Count blocks read from disk
   short  bioPfb;					// Previous "FixBits" value
+
+void sfklCrunch_BuffersInit()
+{
+  bioBuf = (BIOWORD*)malloc(sizeof(BIOWORD) * BIOBUFSIZE);
+  memset(bioBuf, 0, sizeof(BIOWORD) * BIOBUFSIZE);
+}
+
+void sfklCrunch_BuffersFree()
+{
+  free(bioBuf);
+  bioBuf = 0;
+}
 
 // --------------------------------------------------------------------------
 #define GRP_INBITS(g)                           \
