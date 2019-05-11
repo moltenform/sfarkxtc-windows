@@ -56,11 +56,16 @@ There are many ways to accomplish this, here's a pretty straightforward route:
     - if you get the error `make: g++: Command not found`
     - add g++ to the PATH by running
     - `export PATH=$PATH:/c/ruby/Ruby25-x64/msys64/mingw64/bin`
-- For additional security, you can build with Duma enabled.
+- Optional: for additional security, you can build with Duma enabled.
     - adds protection against potential memory bugs triggered by malformed sfark files
     - build Duma to get libduma.a
     - copy libduma.a to sfarkxtc-windows/src/duma
     - run `make USE_DUMA=1`
+- Optional: for additional security, you can build with stack protection.
+    - adds protection against potential overflow bugs triggered by malformed sfark files
+    - I recommend running `pacman -Syu` a few times to get the latest MSYS2
+    - the 2018 version of MSYS2 I had was affected by [this bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=86832); enabling stack protection caused crashes in every function.
+    - run `make USE_DUMA=1 PROTECT_STACK=1`
 - There should now be a file `sfarkxtc_out.exe`
 - Copy `C:\ruby\Ruby25-x64\msys64\mingw64\bin\zlib1.dll` into the same directory as `sfarkxtc_out.exe`
 - Done!
