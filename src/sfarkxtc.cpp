@@ -162,13 +162,13 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	if (argc == 3)
+	if (argc >= 3)
 	{
 		OutFileName = argv[2];
 		printf("Uncompressing %s to %s...\n", InFileName, OutFileName);
 	}
 	
-	if (argc == 4 && strcmp("--quiet", argv[3]) == 0)
+	if (argc >= 4 && strcmp("--quiet", argv[3]) == 0)
 	{
 		quiet = true;
 	}

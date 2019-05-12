@@ -21,6 +21,8 @@ isUnix = sys.platform != 'win32'
 sfarkxtc_binary = r'../sfarkxtc_out' if isUnix else r'../sfarkxtc_out.exe'
 sfarkxtc_shared = [] if isUnix else ['zlib1.dll' , 'libssp-0.dll']
 
+needToChdir = True
+
 originals = os.path.abspath(originals)
 testdir = os.path.abspath(testdir)
 sfarkxtc_binary = os.path.abspath(sfarkxtc_binary)
@@ -48,14 +50,21 @@ def hash(s):
 
 def runSfark(f):
     import os
-    os.chdir(files.getparent(f))
     a, b = os.path.splitext(files.getname(f))
     if not b.lower().endswith('.sfark'):
         trace('found a leftover file', f)
         return
-    wantOutname = a + '.sf2'
+    wantOutname = a + '__out__.sf2'
     assertTrue(files.exists(sfarkxtc_binary), 'binary not found', sfarkxtc_binary)
-    args = [sfarkxtc_binary, files.getname(f), wantOutname, '--quiet']
+    if needToChdir:
+        os.chdir(files.getparent(f))
+        fIn = files.getname(f)
+        fOut = wantOutname
+    else:
+        fIn = f
+        fOut = files.join(files.getparent(f), wantOutname)
+    trace(fIn, fOut)
+    args = [sfarkxtc_binary, fIn, fOut, '--quiet']
     files.run(args)
 
 def withNewExt(s, newext):
@@ -83,25 +92,27 @@ def goDir(d, actualChecksums):
         expectCountNewItems = 1 + (1 if shouldContainLicense else 0) + (1 if shouldContainNotes else 0)
         assertEq(expectCountNewItems, len(newItems), newItems)
         
-        expectSf2 = withNewExt(f, '.sf2')
+        expectSf2 = withNewExt(f, '__out__.sf2')
         trace('checking hash for', expectSf2)
         assertTrue(files.getname(expectSf2) in newItems, expectSf2, newItems)
-        assertTrue(files.getname(expectSf2) in actualChecksums, expectSf2, actualChecksums)
-        trace(hash(expectSf2), actualChecksums[files.getname(expectSf2)])
-        assertEq(hash(expectSf2), actualChecksums[files.getname(expectSf2)], f)
+        nameToCompare = files.getname(expectSf2).replace('__out__', '')
+        assertTrue(files.getname(nameToCompare) in actualChecksums, expectSf2, actualChecksums)
+        trace(hash(expectSf2), actualChecksums[nameToCompare])
+        assertEq(hash(expectSf2), actualChecksums[nameToCompare], f)
         files.deletesure(expectSf2)
         
         if shouldContainNotes:
-            expectNotes = withNewExt(f, '.txt')
+            expectNotes = withNewExt(f, '__out__.txt')
             trace('checking hash for', expectNotes)
             assertTrue(files.getname(expectNotes) in newItems, expectNotes, newItems)
-            assertTrue(files.getname(expectNotes) in actualChecksums, expectNotes, actualChecksums)
-            trace(hash(expectNotes), actualChecksums[files.getname(expectNotes)])
-            assertEq(hash(expectNotes), actualChecksums[files.getname(expectNotes)], f)
+            nameToCompare = files.getname(expectNotes).replace('__out__', '')
+            assertTrue(files.getname(nameToCompare) in actualChecksums, expectNotes, actualChecksums)
+            trace(hash(expectNotes), actualChecksums[nameToCompare])
+            assertEq(hash(expectNotes), actualChecksums[nameToCompare], f)
             files.deletesure(expectNotes)
             
         if shouldContainLicense:
-            expectLicense = withNewExt(f, '.license.txt')
+            expectLicense = withNewExt(f, '__out__.license.txt')
             trace('checking hash for', expectLicense)
             assertTrue(files.getname(expectLicense) in newItems, expectLicense, newItems)
             assertTrue('alicense.txt' in actualChecksums, expectLicense, actualChecksums)
