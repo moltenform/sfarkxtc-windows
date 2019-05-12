@@ -851,7 +851,7 @@ int DecodeImpl(const char *ReqInFileName, const char *ReqOutFileName, BLOCK_DATA
 	return EndProcess(GlobalErrorFlag);
     }
 
-    snprintf(MsgTxt, MAX_MSGTEXT, "Created %s (%ld kb) successfully.", ReqOutFileName, Blk.TotBytesWritten/1024);
+    snprintf(MsgTxt, MAX_MSGTEXT, "Created %s (%ld kb) successfully.", OutFileNameMain, Blk.TotBytesWritten/1024);
     msg(MsgTxt, 0);
     
     return EndProcess(GlobalErrorFlag);
