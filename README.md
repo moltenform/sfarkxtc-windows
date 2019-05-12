@@ -13,6 +13,10 @@ Copy a .sfark file into the same directory as sfarkxtc. From the commandline, ru
 
 and it will extract the .sf2!
 
+For quiet mode (shows less output), use
+
+`sfarkxtc.exe mySoundfont.sfark mySoundfont.sf2 --quiet`
+
 ## Why sfarkxtc-windows?
 
 sfArk still compresses .sf2 files significantly better than even modern .7z and .rar compression. I want to store my files in a format that will still be readable, even 20 years in the future, though, so any type of unique or proprietary format is dangerous. My thoughts on storing soundfonts:
