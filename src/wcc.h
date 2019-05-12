@@ -212,4 +212,5 @@ extern void	sfklLPC_BuffersFree();
 extern ULONG	UnMemcomp(const BYTE *InBuf, int InBytes, BYTE *OutBuf, int OutBufLen);
 
 // sfArkLib_String...
-extern char *StrncpyEnsureNul(char *destination, const char *source, size_t num);
+extern char *StrncpyEnsureNul(char *destination, const char *source, int num);
+void ChangeFileExt(const char *path, const char *newExtension, char *out, int outSize);

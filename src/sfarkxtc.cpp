@@ -32,7 +32,9 @@ const char	*ThisProg = "sfarkxtc";
 const char	*ThisVersion = "3.0-snapshot";	// Version of program
 
 // Standard includes...
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -101,6 +103,33 @@ int ReportError(long error)
 	}
 }
 
+bool StringEndsWith(const char* s1, const char*s2)
+{
+	size_t len1 = strlen(s1);
+	size_t len2 = strlen(s2);
+	if (len2 > len1)
+	{
+		return false;
+	}
+	else
+	{
+		return strcmp(s1 + len1 - len2, s2) == 0;
+	}
+}
+
+bool StringEndsWithCaseInsensitive(const char *s, const char *lowerCaseSuffix)
+{
+	char *sLower = strdup(s);
+	for (int i = 0, len = strlen(sLower); i < len; i++)
+	{
+		sLower[i] = tolower(sLower[i]);
+	}
+
+	bool ret = StringEndsWith(sLower, lowerCaseSuffix);
+	free(sLower);
+	return ret;
+}
+
 static_assert(sizeof(unsigned long) == 4, 
 	"\nThis type of x64 build is untested!\n"
 	"We might fail to correctly extract from sfark files\n"
@@ -142,6 +171,17 @@ int main(int argc, char** argv)
 	if (argc == 4 && strcmp("--quiet", argv[3]) == 0)
 	{
 		quiet = true;
+	}
+	
+	if (!StringEndsWithCaseInsensitive(InFileName, ".sfark"))
+	{
+		char c;
+		printf("Input file does not end with .sfArk. Are you sure you want to continue? (Y/N)");
+		c = getc(stdin);
+		if (!(c == 'y' || c == 'Y'))
+		{
+			return 0;
+		}
 	}
 
 	// Uncompress the file...

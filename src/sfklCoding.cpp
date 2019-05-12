@@ -37,6 +37,13 @@
 
 // 2.23 02-10-03 LPC Speeded up, now double the speed of earlier versions (on Intel at least)
 
+// 05-01-19 Fixed bug, no longer exits with the message "IO error" if you specify a relative path 
+//		Cleaned up filename code,
+//		Original filename is shown to user, but no longer used as an output path
+//		If output-path is not given, use the input-path with the extension changed to .sf2
+//		License information is written to output-path with extension changed to .license.txt
+//		Notes file is written to output-path with extension changed to .txt
+
 // CLIB headers...
 #include	<string.h>
 #include	<stdio.h>
@@ -108,6 +115,7 @@ typedef struct
 
 const char	LicenseExt[] = ".license.txt";		// File extension for license file
 const char	NotesExt[] = ".txt";			// File extension for notes file
+const char	SfExt[] = ".sf2";			// File extension for output file
 
 static	BYTE *Zbuf1 = NULL, *Zbuf2 = NULL;
 
@@ -143,32 +151,16 @@ const char	UpgradeMsg[]		= "Please see Help/About for information on how to obta
 short	*gDecompressFastShiftVal = 0; // Will contain NSHIFTS elements
 USHORT	*gDecompressFastMethod = 0; // Will contain MAX_DIFF_LOOPS elements
 BLOCK_DATA	*gDecodeBlk = 0;  // Will contain one BLOCK_DATA element
+char	OutFileNameMain[SFARKLIB_MAX_FILEPATH] = "";
+char	OutFileNameNotes[SFARKLIB_MAX_FILEPATH] = "";
+char	OutFileNameLicense[SFARKLIB_MAX_FILEPATH] = "";
 
 // ==============================================================
 USHORT	GetsfArkLibVersion(void)
 {
 	return (ProgVersionMaj * 10) + ProgVersionMin/10;
 }
-// ==============================================================
 
-char *ChangeFileExt(char *OutFileName, const char *NewExt, int OutFileNameSize)
-{
-	int n = strlen(OutFileName);
-	char *p;
-
-	for (p = OutFileName+n; *p != '.'; p--)
-	{
-		if (*p == '\\'  ||  p <= OutFileName)	// No extension found?
-		{
-			p = OutFileName + n;
-			break;	
-		}
-	}
-
-	n = p - OutFileName;	// Length of filename without extension
-	StrncpyEnsureNul(p, NewExt, OutFileNameSize-1 - n);
-	return OutFileName;
-}
 // ==============================================================
 
 // Read the File Header....
@@ -316,6 +308,29 @@ int ReadHeader(V2_FILEHEADER *FileHeader, BYTE *fbuf, int bufsize)
 	free(CreatedByProg);
 	free(CreatedByVersion);
 	return ret;
+}
+
+// =================================================================================
+void InitFilenames(const char *ReqInFileName, const char *ReqOutFileName)
+{
+	if (ReqOutFileName)
+	{
+		ChangeFileExt(ReqOutFileName, SfExt, OutFileNameMain, sizeof(OutFileNameMain));
+		ChangeFileExt(ReqOutFileName, NotesExt, OutFileNameNotes, sizeof(OutFileNameNotes));
+		ChangeFileExt(ReqOutFileName, LicenseExt, OutFileNameLicense, sizeof(OutFileNameLicense));
+	}
+	else
+	{
+		ChangeFileExt(ReqInFileName, SfExt, OutFileNameMain, sizeof(OutFileNameMain));
+		ChangeFileExt(ReqInFileName, NotesExt, OutFileNameNotes, sizeof(OutFileNameNotes));
+		ChangeFileExt(ReqInFileName, LicenseExt, OutFileNameLicense, sizeof(OutFileNameLicense));
+	}
+  
+	if (!OutFileNameMain[0] || !OutFileNameNotes[0] || !OutFileNameLicense[0])
+	{
+		msg("Could not get output path (path too long?)", MSG_PopUp);
+		GlobalErrorFlag = SFARKLIB_ERR_FILEIO;
+	}
 }
 
 // ==============================================================
@@ -632,11 +647,11 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 		BYTE *zSrcBuf = (BYTE *) Blk->SrcBuf;
 		BYTE *zDstBuf = (BYTE *) Blk->DstBuf;
 
-		const char *FileExt;
+		const char *OutFileName = 0;
 		if (FileType == FLAGS_License)
-			FileExt = LicenseExt;
+			OutFileName = OutFileNameLicense;
 		else if (FileType == FLAGS_Notes)
-			FileExt = NotesExt;
+			OutFileName = OutFileNameNotes;
 		else
 			return false;
 
@@ -649,7 +664,7 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 
 		if (n <= 0  ||  n > ZBUF_SIZE)								// Check for valid block length
 		{
-			snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - Invalid length for %s file (apparently %ld bytes) %s", FileExt, n, CorruptedMsg);
+			snprintf(MsgTxt, MAX_MSGTEXT, "ERROR - Invalid length for %s file (apparently %ld bytes) %s", OutFileName, n, CorruptedMsg);
 			msg(MsgTxt, MSG_PopUp);
 			GlobalErrorFlag = SFARKLIB_ERR_CORRUPT;
 			return false;
@@ -662,10 +677,6 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 		if (GlobalErrorFlag  ||  m > ZBUF_SIZE)														// Uncompressed ok & size is valid?
 			return false;
 
-		// Write file - Use original file name plus specified extension for OutFileName...
-		char OutFileName[MAX_FILENAME];
-		StrncpyEnsureNul(OutFileName, Blk->FileHeader.FileName, sizeof(OutFileName));	// copy output filename
-		ChangeFileExt(OutFileName, FileExt, sizeof(OutFileName));
 		OpenOutputFile(OutFileName);	// Create notes / license file
 		WriteOutputFile(zDstBuf, m);																			// and write to output file
 		CloseOutputFile();
@@ -691,9 +702,8 @@ bool	ExtractTextFile(BLOCK_DATA *Blk, ULONG FileType)
 
 // ==============================================================
 
-int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&Blk)
+int DecodeImpl(const char *ReqInFileName, const char *ReqOutFileName, BLOCK_DATA	&Blk)
 {
-	char	OutFileName[MAX_FILEPATH];	// File name for current output file
 	int	NumLoops;			// Number of loops before screen update etc.
 
 	V2_FILEHEADER	*FileHeader = &Blk.FileHeader;
@@ -720,16 +730,15 @@ int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&B
 	BioDecompInit();						// Initialise bit i/o
 	LPCinit();							// Init LPC
 	GlobalErrorFlag = SFARKLIB_SUCCESS;
-
+	
 	// Open input (.sfArk) file and read the header...
-	OpenInputFile(InFileName);
+	InitFilenames(ReqInFileName, ReqOutFileName);
+	if (GlobalErrorFlag)  return EndProcess(GlobalErrorFlag);				// Something went wrong?
+	OpenInputFile(ReqInFileName);
 	if (GlobalErrorFlag)  return EndProcess(GlobalErrorFlag);				// Something went wrong?
 	ReadHeader(FileHeader, Zbuf1, ZBUF_SIZE);
 
 	if (GlobalErrorFlag)  return EndProcess(GlobalErrorFlag);				// Something went wrong?
-
-	if (ReqOutFileName == NULL)							// If no output filename requested
-		ReqOutFileName = FileHeader->FileName;
 
 	if ((FileHeader->Flags & FLAGS_License) != 0)		// License file exists?
 	{
@@ -746,9 +755,7 @@ int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&B
 	snprintf(MsgTxt, MAX_MSGTEXT, "Original filename: %s", FileHeader->FileName);
 	msg(MsgTxt, 0);
 
-        // Use original file extension for OutFileName...
-        StrncpyEnsureNul(OutFileName, ReqOutFileName, sizeof(OutFileName));			// Copy output filename
-        OpenOutputFile(OutFileName);																		// Create the main output file...
+        OpenOutputFile(OutFileNameMain);																		// Create the main output file...
 
 	// Set the decompression parameters...
 	switch (FileHeader->CompMethod)		// Depending on compression method that was used...
@@ -852,6 +859,7 @@ int DecodeImpl(const char *InFileName, const char *ReqOutFileName, BLOCK_DATA	&B
 
 void sfklCoding_BuffersInit()
 {
+	// choose to allocate on the heap instead of the stack, in order to better detect overflow
 	MsgTxt = (char *)malloc(sizeof(char) * MAX_MSGTEXT);
 	memset(MsgTxt, 0, sizeof(char) * MAX_MSGTEXT);
 	gDecodeBlk = (BLOCK_DATA *)malloc(sizeof(BLOCK_DATA) * 1);
@@ -876,7 +884,6 @@ void sfklCoding_BuffersFree()
 
 int Decode(const char *InFileName, const char *ReqOutFileName)
 {
-	// choose to allocate on the heap instead of the stack, in order to better detect overflow
 	sfklCoding_BuffersInit();
 	sfklLPC_BuffersInit();
 	sfklCrunch_BuffersInit();
