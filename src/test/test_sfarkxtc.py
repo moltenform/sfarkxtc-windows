@@ -21,7 +21,8 @@ isUnix = sys.platform != 'win32'
 sfarkxtc_binary = r'../sfarkxtc_out' if isUnix else r'../sfarkxtc_out.exe'
 sfarkxtc_shared = [] if isUnix else ['zlib1.dll' , 'libssp-0.dll']
 
-needToChdir = True
+# in case you're running the original sfarkxtc, which needs a call to chdir
+needToChdir = False
 
 originals = os.path.abspath(originals)
 testdir = os.path.abspath(testdir)
