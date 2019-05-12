@@ -48,7 +48,8 @@ There are many ways to accomplish this, here's a pretty straightforward route:
 - Go to https://rubyinstaller.org/downloads/
 - Download "Ruby+DevKit" for x64, for example `rubyinstaller-devkit-2.5.3-1-x64.exe`
 - Run this installer, it will set up a working mingw/msys2 environment
-- If you installed ruby to `C:\ruby`, open the directory `C:\ruby\Ruby25-x64\msys64`
+- I'll assume ruby was installed to `C:\ruby\Ruby25-x64`, replace this below if you used a different directory 
+- Open the directory `C:\ruby\Ruby25-x64\msys64`
 - Run `msys2_shell.cmd` to open a msys2 shell.
 - `cd` to where the sfarkxtc-windows source is.
     - Remember that you need to use / forward slashes in the path, not backslashes.
@@ -70,6 +71,12 @@ There are many ways to accomplish this, here's a pretty straightforward route:
 - Copy `C:\ruby\Ruby25-x64\msys64\mingw64\bin\zlib1.dll` into the same directory as `sfarkxtc_out.exe`
 - Copy `C:\ruby\Ruby25-x64\msys64\mingw64\bin\libssp-0.dll` into the same directory as `sfarkxtc_out.exe`
 - Done!
+
+### Tests
+
+- `cd` to `src/test`
+- Run `python test_sfarkxtc.py`
+- Tests cover all four Compression Strength levels, and all combinations of the presence/absence of notes+license information.
 
 ### Zlib
 

@@ -1,0 +1,5 @@
+
+http://ocmnet.com/saxguru/Timidity.htm#merlin
+
+This is the Default Soundfont that comes with the Full Version. Good for PCs with limited resources, otherwise I recommend one of the Merlin soundfonts. Download TimGM6mb.exe to the directory with other sf2 files, then double click on it to unpack.
+
