@@ -38,16 +38,16 @@ def getActualChecksums():
     return actualChecksums
 
 def hash(s):
-    hasher = hashlib.md5()
     if s.endswith('.txt'):
         # normalize newline characters
+        hasher = hashlib.md5()
         with open(s, 'rb') as f:
             content = f.read()
         content = content.replace(b'\r\n', b'\n').replace(b'\r', b'\n')
         hasher.update(content)
         return hasher.hexdigest()
     else:
-        return files.computeHash(s, hasher)
+        return files.computeHash(s, 'md5')
 
 def runSfark(f):
     import os
