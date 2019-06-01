@@ -1,11 +1,9 @@
 
-# sfarkxtc-windows
-
-Windows binaries for the sfarkxtc tool. You can use `sfarkxtc.exe` to decompress .sfark files into .sf2 soundfonts. A fork of https://github.com/raboof/sfArkXTm
+Windows binaries for the sfarkxtc tool, use it to take soundfonts and convert them from `.sfark` into `.sf2`. A fork of https://github.com/raboof/sfArkXTm 
 
 ## Download+Usage
 
-Go to the releases tab on Github (https://github.com/moltenform/sfarkxtc-windows/releases) and download the latest release that says "win64". Unzip the archive to get `sfarkxtc.exe`.
+Go to the [releases](https://github.com/moltenform/sfarkxtc-windows/releases) tab on Github and download the latest release that says "win64". Unzip the zip file.
 
 Copy a .sfark file into the same directory as sfarkxtc. From the commandline, run a command like
 
@@ -17,9 +15,9 @@ For quiet mode (shows less output), use
 
 `sfarkxtc.exe mySoundfont.sfark mySoundfont.sf2 --quiet`
 
-## Why sfarkxtc-windows?
+## Why sfark?
 
-sfArk still compresses .sf2 files significantly better than even modern .7z and .rar compression. I want to store my files in a format that will still be readable, even 20 years in the future, though, so any type of unique or proprietary format is dangerous. My thoughts on storing soundfonts:
+sfArk still compresses .sf2 files significantly better than even modern .7z and .rar compression. I want to store my files in a format that will still be readable, even 20 years in the future, though, so any type of unique or proprietary format is dangerous. How should I store my soundfonts?
 
 - Store the full .sf2 files
     - Pros: no need to decompress
@@ -28,20 +26,19 @@ sfArk still compresses .sf2 files significantly better than even modern .7z and 
     - Pros: software to decompress is open-source and available
     - Cons: does not compress .sf2 files very well, even with a large buffer size
 - Store in .sfpack format
-    - Pros: good compression ratio
+    - Pros: very good compression ratio
     - Cons: no open source decompression = unsafe for long term storage!
     - [More notes](./src/sfpack_notes.md)
 - Store in .sfark format
-    - Pros: good compression ratio
+    - Pros: very good compression ratio
     - Pros: some tools like SynthFont can read .sfark directly
     - Pros: easily automate decompression via cmd line tool
     - Pros: open source decompression available
-    - Cons: compression still relies on closed-source win32 binary
-    - Cons: sfarkxtc doesn't support 100% of sfark files
+    - Cons: sfark seems to rely on x86-like architectures
 
-(Note that in 2012, j\_e\_f\_f\_g, who wrote "unsfark", [claimed](https://www.linuxmusicians.com/viewtopic.php?t=9854) that sfark is an extremely fragile format relying on intel rounding errors, but this has been disputed by further research... in any case, we'll probably have x86 emulators for a long time. The fact that sfarkxtc can build and work targeting both x86 and x86-64 is a good sign.)
+(In 2012, j\_e\_f\_f\_g, who wrote "unsfark", [claimed](https://www.linuxmusicians.com/viewtopic.php?t=9854) that sfark is an extremely fragile format relying on intel rounding errors, but this has been disputed by further research... and we'll probably have some sort of x86 emulator available for a long time. The fact that sfarkxtc will build and work targeting both x86 and x86-64, and on linux and mac, is a good sign. If you are converting many sf2 files to sfark, see my [batch convert sf2 to sfark tool here](https://github.com/moltenform/automate-sfpack-sfark) which also confirms that the resulting sfark file can be decoded by `sfarkxtc` with 100% fidelity.)
 
-Conclusion: I'll use sfark to store my soundfonts. For long term storage, I'll run a script to run everything through `sfarkxtc.exe` and ensure that `sfarkxtc` can extract a bitwise-identical .sf2 file compared with the input.
+Conclusion: If disk space is at a premium, use sfark, otherwise, use xz or 7z.
 
 ### Building from source
 
