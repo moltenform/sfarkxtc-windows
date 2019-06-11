@@ -24,7 +24,7 @@
 char *GetFileExt(char *FileName)
 {
   // return pointer to (final) file extension including the dot e.g. '.txt'
-  // returns NULL if file is not found
+  // returns NULL if extension is not found
   char *p;
 
   for(p = FileName + strlen(FileName); p > FileName; p--)
@@ -44,8 +44,13 @@ char *GetFileExt(char *FileName)
 
 char *StrncpyEnsureNul(char *destination, const char *source, int num)
 {
-  if (num == 0 || !destination || !source)
+  if (num <= 0 || !destination)
   {
+    return destination;
+  }
+  else if (!source)
+  {
+    destination[0] = '\0';
     return destination;
   }
   else
