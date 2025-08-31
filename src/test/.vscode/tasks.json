@@ -1,0 +1,60 @@
+{
+    
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "python lint",
+            "type": "shell",
+            "command": "py .vscode/lint_filtered.py",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+        },
+        {
+            "label": "ruff lint",
+            "type": "shell",
+            "command": "py .vscode/lint_filtered.py --ruff",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+        },
+        {
+            "label": "ruff lint autofix",
+            "type": "shell",
+            "command": "py .vscode/lint_filtered.py --ruff --fix",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+        },
+        {
+            "label": "autoformat",
+            "type": "shell",
+            "command": "py -m yapf --exclude=OUTSIDE/**/*.py --in-place --recursive --parallel .",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+        },
+    ]
+}
+
+

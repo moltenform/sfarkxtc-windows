@@ -1,0 +1,216 @@
+
+
+[project]
+name = "sfarkxtc-windows-repo-tests"
+version = "0.9"
+authors = [
+  { name="Ben Fisher", email="shinerainseven@gmail.com" },
+]
+license = "GPL-3.0"
+license-files = ["LICEN[CS]E*"]
+description = "Tests for sfarkxtc"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "shinerainsevenlib",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pylint",
+    "ruff",
+]
+
+
+[project.urls]
+Homepage = "https://github.com/moltenform/labs_coordinate_music"
+Issues = "https://github.com/moltenform/labs_coordinate_music/issues"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+# Assume Python 3.8
+target-version = "py38"
+# tell ruff not to fix blank-lines-after-function-or-class
+
+[tool.ruff.lint]
+fixable = ["F403"]
+unfixable = [
+    "ERA", # do not autoremove commented out code
+    "E301",
+    "E302",
+    "E303",
+    "E304",
+    "E305",
+    "E306",
+    "F401",
+    "F841",
+    "PIE804", 
+]
+extend-select = [
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "ERA", # flake8-eradicate/eradicate
+    "I",   # isort
+    "PIE", # flake8-pie
+    "PGH", # pygrep
+    "RUF", # ruff checks
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "UP",  # pyupgrade
+    "F",   # pyflakes
+    "ISC", # implicit string concatenation
+    
+    # leave disabled for now:
+    # "N" pep8-naming
+    # TCH flake8-type-checking
+]
+
+ignore = [
+ "F401", # imported but unused
+ "F403", # 'from module import *' used; unable to detect undefined names
+ "F405", # Name may be undefined, or defined from star imports: module
+ "E302", # Expected 2 blank lines, found 0
+ "E305", # blank-lines-after-function-or-class
+ "E402", # Module level import not at top of file
+ "E228", # Missing whitespace around modulo operator
+ "E401", # Multiple imports on one line
+ "E722", # Do not use bare 'except'
+ "E731", # Do not assign a lambda expression, use a def
+ #"E128", # Continuation line under-indented for visual indent (not in ruff?)
+ #"W504", # Line break occurred after a binary operator (not in ruff?)
+ "TID252", # prefer absolute imports
+ "SIM201", # a != b not a == b
+ "C408", # i prefer dict(a=b) instead of {a:b}
+ "UP031", # i still have old code with '%2d' % x instead of f'{x}'
+ "PGH004", # ok to have bare noqa
+ "I001", # ok to have unsorted imports for now
+ "SIM103", # ok to if x and y and z: return True instead of return x and y and z
+ "UP028", # it wants yield from
+ "SIM102", # nested if ok
+ "SIM114", # it wants combined branches
+ "SIM117", # it wants combined with statements
+ "SIM108", # it wants ternary
+ "SIM105", # it wants contextlib.suppress, cool but i don't want that to be mandatory
+ "ISC003", # concats
+ "E713", # concanot in vs ints
+ "ERA001", # commented out code
+ "RUF015", # single element slice
+ "UP036", # it's ok to check for python2
+ "UP025", # keep unicode prefix for py2 compat
+ "PIE810", # ok to not combine endswith(a, b) 
+ "UP008", # keep super(Base) for py2 compat
+ "RUF001", # ok to have ambiguous-unicode-character-string
+ "SIM300", # prefer no yoda condition
+ "SIM115", # keep raw open() close() for less code churn in legacy code
+ "C405", # ok to not use fancy set() constructors
+ "F541", # unneeded fstrings ok
+ "SIM905", # 'a|b|c'.split('|') is ok
+ "B904", # raise from
+ "C402"
+]
+
+# these might also be useful to disable:
+# F405 ok to use a symbol from a import *
+# W293 Blank line contains whitespace
+# W391 Blank line at end of file
+
+[tool.ruff.format]
+quote-style = "single"
+indent-style = "space"
+
+[tool.ruff.lint.per-file-ignores]
+"src/poetry/console/*" = [] 
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 999
+# C0103 name styles, W0401 wildcard imports, C0116 missing docsstring, C0114 module docstring
+# W0614 unused import, R0911 too many returns R0912 too many branches C0415: import outside top
+# W0611 unused import, R0913 too many args, C0209 fstring C0305 newlines, W0702 bare except:
+# C0115 no docstring, R1705/R1720: unneeded elif, R0902 too many attributes, E0401 import err
+# C1802 ok to say if len(lst), R0914 too many locals, R1735 dict literal, R1737 wants yield from
+# W0603 global ok, R1716 chained ok, W0718: broad exception, W0108 unnecessary lambda (gave false positives)
+# R1703 i prefer return True
+# R0903 too few methods, C0303 whitespace
+# R0401 cyclic import... too aggressive and fires even when the cycle is within a function call (safe)
+# R1732 use with to autoclose resources... consider fixing later
+# R0917 it's not that bad to have many arguments
+# C3001 Lambda expression assigned to a variable
+# W0201 attribute-defined-outside-init (leaving on?)
+
+# C0413 imports should be at the top
+# W1406 no longer need u''
+# C0411 standard import "os.path.join" should be placed before third party import "pytest" 
+disable = """
+C0103,
+W0401,
+C0116,
+C0114,
+W0614,
+R0911,
+R0912,
+C0415,
+W0611,
+R0913,
+C0209,
+C0305,
+W0702,
+C0115,
+R1705,
+R0902,
+R0903,
+E0401,
+C0303,
+C1802,
+R0401,
+R1720,
+R1732,
+R0914,
+R1735,
+R1737,
+W0603,
+R1716,
+W0718,
+W0108,
+R1703,
+R0917,
+C3001,
+C0413,
+W1406,
+C0411,
+W0622,
+W0612,
+W0719,
+C0206,
+W0311,
+W0613,
+R1723,
+R0904,
+R1725,
+R1724,
+R0915,
+R1714,
+R1702,
+W0707,
+C0304,
+W1309,
+W3101,
+C0302,
+R0801,
+"""
+
+# The warning E1101 we want enabled because it's useful to catch missing functions.
+
+[tool.yapf]
+
+# styles: google, pep8, yapf, facebook
+based_on_style = "facebook"
+spaces_before_comment = 1
+split_before_logical_operator = false
+column_limit = 120
+indent_width = 4
+

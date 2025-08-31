@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": ["--capture=no", "--maxfail=1", "-v", "tests/"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
