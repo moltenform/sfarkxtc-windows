@@ -2,12 +2,12 @@
 
 [project]
 name = "sfarkxtc-windows-repo-tests"
-version = "0.9"
+version = "0.2"
 authors = [
   { name="Ben Fisher", email="shinerainseven@gmail.com" },
 ]
 license = "GPL-3.0"
-license-files = ["LICEN[CS]E*"]
+license-files = ["../COPYING"]
 description = "Tests for sfarkxtc"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -27,11 +27,11 @@ dev = [
 
 
 [project.urls]
-Homepage = "https://github.com/moltenform/labs_coordinate_music"
-Issues = "https://github.com/moltenform/labs_coordinate_music/issues"
+Homepage = "https://github.com/moltenform/sfarkxtc-windows"
+Issues = "https://github.com/moltenform/sfarkxtc-windows/issues"
 
 [tool.ruff]
-line-length = 120
+line-length = 95
 indent-width = 4
 # Assume Python 3.8
 target-version = "py38"
@@ -211,6 +211,6 @@ R0801,
 based_on_style = "facebook"
 spaces_before_comment = 1
 split_before_logical_operator = false
-column_limit = 120
+column_limit = 95
 indent_width = 4
 

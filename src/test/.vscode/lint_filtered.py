@@ -54,7 +54,7 @@ def mainRuff():
         line = formatOneLineRuff(event)
         if 'nocpy_' in line:
             continue
-        
+
         if "Access to a protected member _get_id of" in line:
             # skip this - we don't care about it for fixtures
             continue
@@ -81,4 +81,3 @@ if __name__ == '__main__':
             mainPylint()
     finally:
         files.writeAll('__init__.py', '')
-
