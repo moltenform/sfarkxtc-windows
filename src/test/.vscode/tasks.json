@@ -3,9 +3,9 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "python lint",
+            "label": "python pylint",
             "type": "shell",
-            "command": "py .vscode/lint_filtered.py",
+            "command": "python -m shinerainsevenlib --lint-wrapper --pylint",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -16,9 +16,9 @@
             },
         },
         {
-            "label": "ruff lint",
+            "label": "python ruff lint",
             "type": "shell",
-            "command": "py .vscode/lint_filtered.py --ruff",
+            "command": "python -m shinerainsevenlib --lint-wrapper --rufflint",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -29,9 +29,9 @@
             },
         },
         {
-            "label": "ruff lint autofix",
+            "label": "python ruff lint autofix",
             "type": "shell",
-            "command": "py .vscode/lint_filtered.py --ruff --fix",
+            "command": "python -m shinerainsevenlib --lint-wrapper --rufflint --fix",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -42,9 +42,9 @@
             },
         },
         {
-            "label": "autoformat",
+            "label": "python run autoformat",
             "type": "shell",
-            "command": "py -m yapf --exclude=OUTSIDE/**/*.py --in-place --recursive --parallel .",
+            "command": "python -m shinerainsevenlib --lint-wrapper --format",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
@@ -56,5 +56,3 @@
         },
     ]
 }
-
-

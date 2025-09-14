@@ -78,7 +78,7 @@ def runSfark(f):
 
 
 def withNewExt(s, newext):
-    a, b = os.path.splitext(s)
+    a, _b = os.path.splitext(s)
     return a + newext
 
 
